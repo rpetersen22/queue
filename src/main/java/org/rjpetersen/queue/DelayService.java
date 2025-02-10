@@ -5,29 +5,34 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.Random;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class DelayService {
     private final Logger logger = LoggerFactory.getLogger(DelayService.class);
 
-    private final Timer timer;
+    private final ScheduledThreadPoolExecutor threadPool;
     public DelayService() {
-        this.timer = new Timer();
+        threadPool = new ScheduledThreadPoolExecutor(1);
     }
 
-    public void delayRandom() {
-        delayFor(new Random().nextLong(0, 1000));
+    public void blockingDelayRandom() throws InterruptedException {
+        blockingDelay(new Random().nextLong(1000, 3000));
     }
 
-    public void delayFor(long milliseconds) {
-        TimerTask task = new TimerTask() {
-            @Override
-            public void run() {
-                logger.info("Delaying for {} ms.", milliseconds);
-            }
-        };
-        timer.schedule(task, milliseconds);
+    public void blockingDelay(long delay) throws InterruptedException {
+        logger.info("Delaying for {} ms.", delay);
+        TimeUnit.MILLISECONDS.sleep(delay);
+    }
+
+    public void executeAfterRandom() {
+        executeAfterDelay(new Random().nextLong(1000, 3000));
+    }
+
+    public void executeAfterDelay(long delay) {
+        threadPool.schedule(() ->
+            logger.info("Delayed for {} ms.", delay)
+        , delay, TimeUnit.MILLISECONDS);
     }
 }

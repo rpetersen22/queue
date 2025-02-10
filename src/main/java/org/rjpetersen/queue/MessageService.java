@@ -3,8 +3,6 @@ package org.rjpetersen.queue;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
-import java.util.Timer;
-import java.util.TimerTask;
 
 @Service
 public class MessageService {
@@ -28,7 +26,11 @@ public class MessageService {
 
     public boolean offer(String message) {
         //simulate message processing work
-        delayService.delayRandom();
+        try {
+            delayService.blockingDelayRandom();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         messageRepository.save(new MessageEntity(message));
         return true;
